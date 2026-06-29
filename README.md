@@ -10,7 +10,32 @@ space, cuts birthday/popular-sequence clustering, and turns real draw history
 into transparent weighting — so on the vanishingly rare chance you win, you
 split the jackpot with fewer people.
 
-**Live:** <https://grassclaw.github.io/lottoguesser/> — [the lab](https://grassclaw.github.io/lottoguesser/app/) · [the reasoning probe](https://grassclaw.github.io/lottoguesser/study/)
+**Live:** <https://grassclaw.github.io/lottoguesser/> — [the reasoning probe](https://grassclaw.github.io/lottoguesser/study/) · [the lab](https://grassclaw.github.io/lottoguesser/app/)
+
+## The point: a reasoning probe
+
+The lottery is the **instrument**, not the subject. It is the rare task where
+impossibility is *provable* (independent draws carry zero signal), so it cleanly
+grades what a reasoning engine does when it can't bluff: **deflect** into life
+advice, **capitulate** into fake confidence, or **reframe** — recognize there is
+no signal and pivot to the part that is actually solvable (human picking
+behavior). Number-matches are kept as a deliberate **control** — luck, not
+reasoning — to prove that a model which "wins" didn't think better.
+
+[![The reasoning-probe study dashboard](media/study.png)](https://grassclaw.github.io/lottoguesser/study/)
+
+Each engine is run through a two-phase protocol (bare task → theory handed over)
+and classified. Details: [`study/PROTOCOL.md`](study/PROTOCOL.md) · dashboard:
+[`study/`](study/) · runner: [`study/runner/`](study/runner/). The seed run is
+Claude Opus 4.8 probing itself (a flagged confound).
+
+## The lab
+
+The same thesis, made usable: it can't predict a draw, so it helps you pick
+*unlike a human* — spread across the board, dodge birthday and popular-sequence
+clustering, grade saved picks against real draws.
+
+[![The Lottery Guesser lab generating Powerball tickets](media/app.png)](https://grassclaw.github.io/lottoguesser/app/)
 
 ## The two eras of this project
 
@@ -71,23 +96,6 @@ lotto_v1.py              v1 ML predictor (kept as a record of the thesis)
 compare_learn.py         v1 predict/compare loop
 tools/                   v1 PDF→CSV + SQLite store helpers
 ```
-
-## The reasoning probe (`study/`)
-
-The deeper purpose: the lottery is a **clean room for testing reasoning engines**.
-Prediction here is *provably* impossible, so it cleanly grades what a model does
-when it can't bluff — **deflect** (life advice), **capitulate** (fake-confident
-numbers), or **reframe** (recognize there's no signal and pivot to the solvable
-adjacent problem). Each engine is run through a two-phase protocol: the bare task
-(measuring whether it reasons unprompted, and how many nudges it takes), then the
-theory handed over (does it operationalize it, parrot it, or produce
-theory-shaped noise?). Number-matches are kept as a deliberate **control** — luck,
-not reasoning — to prove that a model which "wins" didn't think better.
-
-- `study/index.html` — the study dashboard (engine picker + full comparison)
-- `study/PROTOCOL.md` — the two-phase protocol and classification rubric
-- `study/runs.js` — the dataset (seeded with Claude Opus 4.8 probing itself)
-- `study/runner/` — reference runner (Claude adapter; pluggable for other engines)
 
 ## The honest disclaimer
 
