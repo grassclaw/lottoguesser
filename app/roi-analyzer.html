@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lottery ROI Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f5f0e7;
+      --muted: #b9b0a4;
+      --dim: #706a62;
+      --panel: #211f1c;
+      --line: #514a40;
+      --gold: #ffca5f;
+      --mint: #8ef6c7;
+      --blue: #70b9ff;
+      --red: #ff6d5a;
+      --shadow: rgba(0, 0, 0, .42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", ui-sans-serif, sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255, 202, 95, .18), transparent 28rem),
+        radial-gradient(circle at 86% 18%, rgba(112, 185, 255, .13), transparent 30rem),
+        linear-gradient(135deg, #11100f 0%, #1d1915 52%, #0d0f10 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .08;
+      background-image:
+        linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    button, input, select { font: inherit; }
+
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #312d27;
+      color: var(--ink);
+      text-decoration: none;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    a.button:hover {
+      transform: translateY(-1px);
+      border-color: var(--gold);
+      background: #3a352e;
+    }
+
+    .shell {
+      position: relative;
+      width: min(1360px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      padding: 18px 0 28px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 48px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(42px, 7vw, 92px);
+      line-height: .9;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 14px 0 0;
+      max-width: 850px;
+      color: var(--muted);
+      font-size: clamp(16px, 1.7vw, 19px);
+      line-height: 1.55;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .swing-controls,
+    .fantasy-controls {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #151412;
+      color: var(--ink);
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    select { appearance: none; }
+
+    .check-field {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #151412;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .check-field input {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--gold);
+    }
+
+    .break-even {
+      min-height: 42px;
+      display: grid;
+      align-content: center;
+      padding: 10px 12px;
+      border: 1px solid rgba(112, 185, 255, .26);
+      border-radius: 8px;
+      background: rgba(112, 185, 255, .07);
+      color: #cfe7ff;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .big-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .board-tile {
+      min-height: 150px;
+      display: grid;
+      align-content: space-between;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 202, 95, .1), rgba(25, 23, 21, .96));
+      box-shadow: 0 14px 34px rgba(0, 0, 0, .24);
+    }
+
+    .board-tile b {
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .board-tile strong {
+      display: block;
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .board-tile span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .card {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(33, 31, 28, .93);
+      box-shadow: 0 18px 44px var(--shadow);
+      padding: 16px;
+    }
+
+    .card h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 16px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .ev {
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(142, 246, 199, .24);
+      background: rgba(142, 246, 199, .055);
+    }
+
+    .ev strong {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .ev span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .dimensions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .dim-card {
+      min-height: 92px;
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      padding: 11px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      background: #191715;
+    }
+
+    .dim-card small {
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .dim-card strong {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 27px;
+      line-height: 1;
+    }
+
+    .dim-card span {
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .rows {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .row:last-child { border-bottom: 0; }
+    .row b { color: var(--ink); }
+
+    .note {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid rgba(255, 202, 95, .32);
+      border-radius: 8px;
+      background: rgba(255, 202, 95, .08);
+      color: #f5dca0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .source-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: var(--muted);
+    }
+
+    .source-item {
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      background: #191715;
+    }
+
+    .source-item strong {
+      display: block;
+      color: var(--ink);
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 7px;
+    }
+
+    .source-item span {
+      display: block;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 1100px) {
+      .cards, .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .big-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-strip { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .shell { padding: 16px; }
+      header, .cards, .controls, .swing-controls, .fantasy-controls, .big-board, .dimensions { grid-template-columns: 1fr; }
+      .top-actions { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="eyebrow">Expected value desk</div>
+        <h1>ROI Analyzer</h1>
+        <p class="lead">Compare Arizona draw games across four different kinds of return: how often anything hits, how much comes back on average, how much comes from small prizes, and how much is pure jackpot upside.</p>
+      </div>
+      <div class="top-actions">
+        <a class="button" href="./lottery-guesser.html">Back to guesser</a>
+        <a class="button" href="https://www.arizonalottery.com/winners/">Winners page</a>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="field">
+        <label for="thePickJackpot">The Pick jackpot assumption</label>
+        <input id="thePickJackpot" type="number" min="0" step="1000" value="3500000">
+      </div>
+      <div class="field">
+        <label for="fantasyJackpot">Fantasy 5 jackpot assumption</label>
+        <input id="fantasyJackpot" type="number" min="0" step="1000" value="456000">
+      </div>
+      <div class="field">
+        <label for="tripleJackpot">Triple Twist jackpot assumption</label>
+        <input id="tripleJackpot" type="number" min="0" step="1000" value="437000">
+      </div>
+      <div class="field">
+        <label for="megaJackpot">Mega Millions annuity jackpot assumption</label>
+        <input id="megaJackpot" type="number" min="0" step="1000000" value="348000000">
+      </div>
+    </section>
+
+    <section id="jackpotSource" class="source-strip" aria-label="Current Arizona jackpot source"></section>
+
+    <div class="note" style="margin-top:0;margin-bottom:18px">The Arizona game fields auto-fill from the latest refreshed official past-180-days PDF bundle. Change them to ask “what if this jackpot were bigger/smaller?” Mega Millions still uses the typed annuity assumption until we add a separate current-jackpot feed for multi-state games.</div>
+
+    <section class="swing-controls" aria-label="Big swing assumptions">
+      <div class="field">
+        <label for="budget">Big-swing budget</label>
+        <input id="budget" type="number" min="1" step="1" value="20">
+      </div>
+      <div class="field">
+        <label for="edgeMultiplier">Guesser / reduction edge multiplier</label>
+        <input id="edgeMultiplier" type="number" min="1" max="1000" step=".1" value="1">
+      </div>
+    </section>
+
+    <section class="fantasy-controls" aria-label="Fantasy 5 full ticket assumptions">
+      <div class="field">
+        <label for="fantasyExtra">Fantasy 5 EXTRA! add-on</label>
+        <select id="fantasyExtra">
+          <option value="0">No EXTRA!</option>
+          <option value="1">$1 EXTRA! instant side game</option>
+          <option value="2">$2 EXTRA! instant side game</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fantasyExtraAverage">Average EXTRA! prize when it hits</label>
+        <input id="fantasyExtraAverage" type="number" min="0" step=".25" value="3.80">
+      </div>
+      <div class="field">
+        <label>Fantasy 5 Doubler</label>
+        <label class="check-field" for="fantasyDoubler">
+          <input id="fantasyDoubler" type="checkbox" checked>
+          Include free 1-in-10 Doubler EV
+        </label>
+      </div>
+      <div class="field">
+        <label>EXTRA! break-even</label>
+        <div id="extraBreakEven" class="break-even">No EXTRA! selected.</div>
+      </div>
+    </section>
+
+    <section id="bigBoard" class="big-board" aria-label="ROI lenses"></section>
+
+    <section id="cards" class="cards"></section>
+
+    <div class="note">Caveats: jackpot prizes may be split, advertised jackpots may be annuity values rather than cash values, taxes are ignored, and scratchers require remaining-prize inventory for a real ROI estimate. Fantasy 5 EXTRA! uses your average-hit prize assumption because the public page gives the overall odds and max prize, not a full prize-distribution table. Winner stories are useful for color, but they are self-submitted and not a complete expected-value dataset.</div>
+  </main>
+
+  <script src="./az-lottery-history.js"></script>
+  <script>
+    const inputs = {
+      thePickJackpot: document.querySelector("#thePickJackpot"),
+      fantasyJackpot: document.querySelector("#fantasyJackpot"),
+      tripleJackpot: document.querySelector("#tripleJackpot"),
+      megaJackpot: document.querySelector("#megaJackpot"),
+      budget: document.querySelector("#budget"),
+      edgeMultiplier: document.querySelector("#edgeMultiplier"),
+      fantasyExtra: document.querySelector("#fantasyExtra"),
+      fantasyExtraAverage: document.querySelector("#fantasyExtraAverage"),
+      fantasyDoubler: document.querySelector("#fantasyDoubler")
+    };
+
+    const cards = document.querySelector("#cards");
+    const bigBoard = document.querySelector("#bigBoard");
+    const jackpotSource = document.querySelector("#jackpotSource");
+    const extraBreakEven = document.querySelector("#extraBreakEven");
+
+    function money(n) {
+      return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: n >= 10 ? 0 : 2 });
+    }
+
+    function pct(n) {
+      return `${(n * 100).toFixed(1)}%`;
+    }
+
+    function chancePct(n) {
+      if (n <= 0) return "0%";
+      if (n < .000001) return `${(n * 100).toFixed(6)}%`;
+      if (n < .0001) return `${(n * 100).toFixed(4)}%`;
+      if (n < .01) return `${(n * 100).toFixed(3)}%`;
+      return pct(n);
+    }
+
+    function compact(n) {
+      return n.toLocaleString(undefined, { maximumFractionDigits: n >= 10 ? 0 : 1 });
+    }
+
+    function jackpotBundle() {
+      return typeof AZ_JACKPOTS === "undefined" ? {} : AZ_JACKPOTS;
+    }
+
+    function applyAutoJackpots() {
+      const jackpots = jackpotBundle();
+      const bindings = [
+        { key: "azPick", label: "The Pick", input: inputs.thePickJackpot },
+        { key: "azFantasy", label: "Fantasy 5", input: inputs.fantasyJackpot },
+        { key: "azTriple", label: "Triple Twist", input: inputs.tripleJackpot }
+      ];
+
+      bindings.forEach(item => {
+        const record = jackpots[item.key];
+        if (record && Number(record.amount) > 0) item.input.value = record.amount;
+      });
+
+      jackpotSource.innerHTML = bindings.map(item => {
+        const record = jackpots[item.key];
+        if (!record || !Number(record.amount)) {
+          return `<div class="source-item"><strong>${item.label}</strong><span>No refreshed jackpot metadata found. Run outputs/refresh-az-history.sh.</span></div>`;
+        }
+        return `<div class="source-item"><strong>${money(record.amount)}</strong><span>${item.label} · latest official PDF row ${record.date}</span></div>`;
+      }).join("");
+    }
+
+    function tier(value, odds) {
+      return value / odds;
+    }
+
+    function tierObj(label, prize, odds, kind = "small") {
+      return { label, prize, odds, ev: tier(prize, odds), kind };
+    }
+
+    function extraLayer() {
+      const extraCost = Number(inputs.fantasyExtra.value) || 0;
+      const averagePrize = Number(inputs.fantasyExtraAverage.value) || 0;
+      const odds = 3.8;
+      const maxPrize = extraCost === 2 ? 500 : extraCost === 1 ? 250 : 0;
+      const ev = extraCost > 0 ? averagePrize / odds : 0;
+      const breakEvenPrize = extraCost * odds;
+      return { extraCost, averagePrize, odds, maxPrize, ev, breakEvenPrize };
+    }
+
+    function syncExtraControls() {
+      const layer = extraLayer();
+      inputs.fantasyExtraAverage.disabled = layer.extraCost === 0;
+      if (layer.extraCost === 0) {
+        extraBreakEven.textContent = "No EXTRA! selected.";
+        return;
+      }
+      extraBreakEven.textContent = `${money(layer.extraCost)} EXTRA! needs an average winning EXTRA! prize of ${money(layer.breakEvenPrize)} to break even. Max listed prize is ${money(layer.maxPrize)}.`;
+    }
+
+    function jackpotChance(effectivePlays, odds) {
+      return 1 - Math.pow(1 - 1 / odds, effectivePlays);
+    }
+
+    function megaAveragePrize(values) {
+      const weights = [
+        { m: 10, odds: 32.0 },
+        { m: 5, odds: 16.0 },
+        { m: 4, odds: 8.0 },
+        { m: 3, odds: 3.2 },
+        { m: 2, odds: 2.13 }
+      ];
+      const totalWeight = weights.reduce((sum, item) => sum + 1 / item.odds, 0);
+      return weights.reduce((sum, item) => sum + values[item.m] * (1 / item.odds) / totalWeight, 0);
+    }
+
+    function games() {
+      const thePickJackpot = Number(inputs.thePickJackpot.value) || 0;
+      const fantasyJackpot = Number(inputs.fantasyJackpot.value) || 0;
+      const tripleJackpot = Number(inputs.tripleJackpot.value) || 0;
+      const megaCash = (Number(inputs.megaJackpot.value) || 0) * .5;
+      const includeDoubler = inputs.fantasyDoubler.checked;
+      const doublerFactor = includeDoubler ? 1.1 : 1;
+      const extra = extraLayer();
+      const fantasyCashChance = extra.extraCost > 0
+        ? 1 - (1 - 1 / 9.62) * (1 - 1 / extra.odds)
+        : 1 / 9.62;
+      return [
+        {
+          name: "The Pick",
+          cost: 1,
+          overallOdds: 39,
+          jackpotPrize: thePickJackpot,
+          jackpotOdds: 7059052,
+          note: "6 of 44. Jackpot default from latest official 180-day PDF row.",
+          tiers: [
+            tierObj("Jackpot", thePickJackpot, 7059052, "jackpot"),
+            tierObj("5/6", 2000, 30961),
+            tierObj("4/6", 50, 669),
+            tierObj("3/6", 3, 42)
+          ]
+        },
+        {
+          name: extra.extraCost > 0 ? "Fantasy 5 + EXTRA!" : "Fantasy 5",
+          cost: 1 + extra.extraCost,
+          overallOdds: 1 / fantasyCashChance,
+          jackpotPrize: fantasyJackpot,
+          jackpotOdds: 749398,
+          note: extra.extraCost > 0
+            ? `5 of 41. Doubler ${includeDoubler ? "included" : "excluded"}. EXTRA! uses official 1 in 3.8 overall odds plus your average-hit prize assumption.`
+            : `5 of 41. Doubler ${includeDoubler ? "included as free 10% non-jackpot EV" : "excluded"}. EXTRA! not selected.`,
+          tiers: [
+            tierObj("Jackpot", fantasyJackpot, 749398, "jackpot"),
+            tierObj("4/5", 500 * doublerFactor, 4163),
+            tierObj("3/5", 5 * doublerFactor, 119),
+            tierObj("2/5", 1 * doublerFactor, 11),
+            ...(extra.extraCost > 0 ? [{ label: `EXTRA! average`, prize: extra.averagePrize, odds: extra.odds, ev: extra.ev, kind: "extra" }] : [])
+          ],
+          addOns: extra.extraCost > 0 ? {
+            extraCost: extra.extraCost,
+            extraOdds: extra.odds,
+            extraAveragePrize: extra.averagePrize,
+            extraBreakEvenPrize: extra.breakEvenPrize,
+            extraMaxPrize: extra.maxPrize
+          } : null
+        },
+        {
+          name: "Triple Twist",
+          cost: 2,
+          overallOdds: 7.9,
+          jackpotPrize: tripleJackpot,
+          jackpotOdds: 5245786,
+          note: "Three rows per $2 game plus combined-line prizes, using published game odds.",
+          tiers: [
+            tierObj("Jackpot", tripleJackpot, 5245786, "jackpot"),
+            tierObj("Row 5/6", 500, 24286),
+            tierObj("Row 4/6", 10, 555.1),
+            tierObj("Row 3/6", 2, 36.7),
+            tierObj("Combined 10+", 2000, 142824.9),
+            tierObj("Combined 9", 500, 12407.9),
+            tierObj("Combined 8", 50, 1473),
+            tierObj("Combined 7", 10, 237.6),
+            tierObj("Combined 6", 5, 52.1),
+            tierObj("Combined 5", 2, 15.7)
+          ]
+        },
+        {
+          name: "Mega Millions",
+          cost: 5,
+          overallOdds: 23.07,
+          jackpotPrize: megaCash,
+          jackpotOdds: 290472336,
+          note: "Uses estimated cash as 50% of annuity and averages the built-in multiplier.",
+          tiers: [
+            tierObj("Jackpot cash", megaCash, 290472336, "jackpot"),
+            tierObj("5 white", megaAveragePrize({ 2: 2000000, 3: 3000000, 4: 4000000, 5: 5000000, 10: 10000000 }), 12629232),
+            tierObj("4 + MB", megaAveragePrize({ 2: 20000, 3: 30000, 4: 40000, 5: 50000, 10: 100000 }), 893761),
+            tierObj("4 white", megaAveragePrize({ 2: 1000, 3: 1500, 4: 2000, 5: 2500, 10: 5000 }), 38859),
+            tierObj("3 + MB", megaAveragePrize({ 2: 400, 3: 600, 4: 800, 5: 1000, 10: 2000 }), 13965),
+            tierObj("3 white", megaAveragePrize({ 2: 20, 3: 30, 4: 40, 5: 50, 10: 100 }), 607),
+            tierObj("2 + MB", megaAveragePrize({ 2: 20, 3: 30, 4: 40, 5: 50, 10: 100 }), 665),
+            tierObj("1 + MB", megaAveragePrize({ 2: 14, 3: 21, 4: 28, 5: 35, 10: 70 }), 86),
+            tierObj("MB only", megaAveragePrize({ 2: 10, 3: 15, 4: 20, 5: 25, 10: 50 }), 35)
+          ]
+        }
+      ];
+    }
+
+    function render() {
+      syncExtraControls();
+      const budget = Math.max(1, Number(inputs.budget.value) || 1);
+      const edgeMultiplier = Math.max(1, Number(inputs.edgeMultiplier.value) || 1);
+      const rows = games().map(game => {
+        const ev = game.tiers.reduce((sum, tier) => sum + tier.ev, 0);
+        const jackpotEv = game.tiers.filter(tier => tier.kind === "jackpot").reduce((sum, tier) => sum + tier.ev, 0);
+        const smallEv = ev - jackpotEv;
+        const roi = ev / game.cost - 1;
+        const plays = Math.floor(budget / game.cost);
+        const effectivePlays = plays * edgeMultiplier;
+        const hitJackpot = jackpotChance(effectivePlays, game.jackpotOdds);
+        const expectedReturnAtBudget = ev * plays;
+        return { ...game, ev, jackpotEv, smallEv, roi, plays, effectivePlays, hitJackpot, expectedReturnAtBudget };
+      }).sort((a, b) => b.roi - a.roi);
+
+      const averageBest = rows[0];
+      const easiestJackpot = [...rows].sort((a, b) => a.jackpotOdds - b.jackpotOdds)[0];
+      const biggestHit = [...rows].sort((a, b) => b.jackpotPrize - a.jackpotPrize)[0];
+      const reducedBest = [...rows].sort((a, b) => b.hitJackpot - a.hitJackpot)[0];
+
+      bigBoard.innerHTML = [
+        {
+          label: "Best average return",
+          value: averageBest.name,
+          detail: `${money(averageBest.ev)} back per ${money(averageBest.cost)} ticket · ROI ${pct(averageBest.roi)}`
+        },
+        {
+          label: "Most likely jackpot",
+          value: easiestJackpot.name,
+          detail: `Base jackpot odds 1 in ${compact(easiestJackpot.jackpotOdds)}`
+        },
+        {
+          label: "Biggest hit if right",
+          value: biggestHit.name,
+          detail: `${money(biggestHit.jackpotPrize)} estimated jackpot value in this model`
+        },
+        {
+          label: "Best with reduction",
+          value: reducedBest.name,
+          detail: `${chancePct(reducedBest.hitJackpot)} jackpot chance with ${compact(reducedBest.plays)} tickets and ${compact(edgeMultiplier)}x edge`
+        }
+      ].map(item => `
+        <article class="board-tile">
+          <b>${item.label}</b>
+          <div>
+            <strong>${item.value}</strong>
+            <span>${item.detail}</span>
+          </div>
+        </article>
+      `).join("");
+
+      cards.innerHTML = rows.map(game => `
+        <article class="card">
+          <h2>${game.name}</h2>
+          <div class="ev">
+            <span>expected return per ${money(game.cost)} ticket</span>
+            <strong>${money(game.ev)}</strong>
+            <span>ROI ${pct(game.roi)} · loss ${money(game.cost - game.ev)}</span>
+          </div>
+          <div class="dimensions">
+            <div class="dim-card">
+              <small>Wins more often</small>
+              <strong>${compact(100 / game.overallOdds)}</strong>
+              <span>cash-prize hits per 100 tickets</span>
+            </div>
+            <div class="dim-card">
+              <small>Small-prize churn</small>
+              <strong>${money(game.smallEv)}</strong>
+              <span>non-jackpot expected return</span>
+            </div>
+            <div class="dim-card">
+              <small>Jackpot upside</small>
+              <strong>${money(game.jackpotEv)}</strong>
+              <span>jackpot expected return</span>
+            </div>
+            <div class="dim-card">
+              <small>Cost drag</small>
+              <strong>${money(game.cost - game.ev)}</strong>
+              <span>expected loss per play</span>
+            </div>
+          </div>
+          <div class="rows">
+            <div class="row"><span>Overall odds</span><b>1 in ${compact(game.overallOdds)}</b></div>
+            <div class="row"><span>Jackpot odds</span><b>1 in ${compact(game.jackpotOdds)}</b></div>
+            <div class="row"><span>Jackpot chance at budget</span><b>${chancePct(game.hitJackpot)}</b></div>
+            <div class="row"><span>Average return at budget</span><b>${money(game.expectedReturnAtBudget)}</b></div>
+            ${game.tiers.map(tier => `<div class="row"><span>${tier.label}</span><b>${money(tier.ev)}</b></div>`).join("")}
+            <div class="row"><span>Assumption</span><b>${game.note}</b></div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    Object.values(inputs).forEach(input => input.addEventListener("input", render));
+    applyAutoJackpots();
+    render();
+  </script>
+</body>
+</html>

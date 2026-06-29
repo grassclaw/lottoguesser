@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reasoning Probe — Lottery Guesser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      color-scheme:dark; --ink:#f5f0e7; --muted:#b9b0a4; --dim:#706a62;
+      --panel:#211f1c; --panel-2:#2b2823; --line:#514a40; --gold:#ffca5f;
+      --mint:#8ef6c7; --blue:#70b9ff; --red:#ff6d5a; --violet:#b99cff;
+      --shadow:rgba(0,0,0,.42);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--ink);font-family:"IBM Plex Sans",ui-sans-serif,sans-serif;
+      background:radial-gradient(circle at 16% 8%,rgba(255,202,95,.16),transparent 28rem),
+        radial-gradient(circle at 84% 12%,rgba(112,185,255,.12),transparent 30rem),
+        linear-gradient(135deg,#11100f 0%,#1d1915 52%,#0d0f10 100%);}
+    .shell{width:min(1280px,100%);margin:0 auto;padding:24px}
+    .eyebrow{display:flex;align-items:center;gap:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px;margin-top:8px}
+    .eyebrow::before{content:"";width:48px;height:1px;background:var(--gold)}
+    h1{margin:.2em 0 0;font-family:"Fraunces",Georgia,serif;font-size:clamp(40px,7vw,84px);line-height:.9}
+    .lead{max-width:760px;color:var(--muted);font-size:clamp(15px,1.7vw,19px);line-height:1.55;margin:14px 0 6px}
+    .lead em{color:var(--ink);font-style:italic}
+    a.back{color:var(--blue);text-decoration:none;font-size:13px}
+    .grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start;margin-top:22px}
+    .panel{border:1px solid var(--line);background:rgba(33,31,28,.92);box-shadow:0 18px 44px var(--shadow);border-radius:8px;overflow:hidden}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.18)}
+    h2{margin:0;font-size:14px;text-transform:uppercase;letter-spacing:.11em;color:var(--gold)}
+    .panel-body{padding:18px}
+    .engine{display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#191715;color:var(--ink);padding:11px 12px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s}
+    .engine:hover{border-color:var(--gold)}
+    .engine.active{border-color:var(--gold);background:#322c22}
+    .engine .name{font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .engine .sub{color:var(--dim);font-size:12px;margin-top:3px}
+    .dot{width:8px;height:8px;border-radius:999px;flex:0 0 auto}
+    .dot.has{background:var(--mint)} .dot.none{background:var(--dim)}
+    .phase{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.phase{grid-template-columns:1fr}}
+    .ph{border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#191715;padding:15px}
+    .ph h3{margin:0 0 10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;letter-spacing:.02em}
+    .chip.reframe,.chip.operationalized{background:rgba(142,246,199,.16);color:var(--mint)}
+    .chip.deflect,.chip.parroted{background:rgba(112,185,255,.16);color:var(--blue)}
+    .chip.capitulate,.chip.theory_shaped_noise{background:rgba(255,109,90,.16);color:var(--red)}
+    .meta{color:var(--dim);font-size:12px;margin:10px 0 0}
+    .resp{color:var(--muted);font-size:13.5px;line-height:1.5;margin:12px 0;border-left:2px solid var(--line);padding-left:12px}
+    .balls{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+    .ball{width:34px;height:34px;display:inline-grid;place-items:center;border-radius:999px;color:#17110a;background:linear-gradient(145deg,#fff7db,#c99b3b);font-weight:800;font-size:14px}
+    .ball.special{color:#1e0604;background:linear-gradient(145deg,#ffb4a9,#e84b35)}
+    .control{margin-top:16px;border:1px dashed rgba(255,202,95,.4);border-radius:8px;background:rgba(255,202,95,.06);padding:12px 14px}
+    .control .lbl{color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .control p{margin:6px 0 0;color:#f5dca0;font-size:12.5px;line-height:1.45}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{text-align:left;padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+    th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+    td .small{color:var(--dim);font-size:11px}
+    .control-col{color:var(--dim)}
+    .empty{color:var(--dim);font-size:14px;line-height:1.5;padding:8px 2px}
+    .note{margin-top:14px;padding:12px;border:1px solid rgba(185,156,255,.3);border-radius:8px;color:#d9caff;background:rgba(185,156,255,.07);font-size:12.5px;line-height:1.45}
+    .axis-key{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;color:var(--dim);font-size:12px}
+    .axis-key b{color:var(--ink)}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <a class="back" href="../app/index.html">&larr; Lottery Guesser (the instrument)</a>
+    <div class="eyebrow">Reasoning probe</div>
+    <h1>The Impossible-Task Test</h1>
+    <p class="lead">The lottery is not the subject — it is the <em>instrument</em>. A fair draw is the one task where impossibility is <em>provable</em>, so we can grade what a reasoning engine does when it can't bluff: <em>deflect</em> into life advice, <em>capitulate</em> into fake confidence, or <em>reframe</em> — recognize there is no signal and pivot to the part that is actually solvable. Reasoning is the study; number-matches are a deliberate control.</p>
+
+    <div class="grid">
+      <aside class="panel">
+        <div class="panel-head"><h2>Engines</h2></div>
+        <div class="panel-body" id="engineList"></div>
+      </aside>
+
+      <section style="display:grid;gap:18px">
+        <div class="panel">
+          <div class="panel-head"><h2 id="selTitle">—</h2><span id="selTag" class="meta"></span></div>
+          <div class="panel-body" id="detail"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Full study</h2></div>
+          <div class="panel-body">
+            <table>
+              <thead><tr>
+                <th>Engine</th><th>Phase A</th><th>Push depth</th><th>Phase B</th>
+                <th class="control-col">Number score (control)</th>
+              </tr></thead>
+              <tbody id="studyRows"></tbody>
+            </table>
+            <div class="axis-key">
+              <span><b>Reasoning axis</b> — Phase A / push depth / Phase B (the study)</span>
+              <span><b>Control axis</b> — number score &amp; real-draw matches (luck, not reasoning)</span>
+            </div>
+            <div class="note">Seed bias: the only run so far is <b>Claude Opus 4.8 probing itself</b> — experimenter and subject are the same model. That is a real confound, corrected by adding independent engines (other tiers, non-Claude), not by trusting the seed. See <code>study/PROTOCOL.md</code> and <code>study/runner/</code>.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="./models.js"></script>
+  <script src="./runs.js"></script>
+  <script>
+    const runByEngine = Object.fromEntries(RUNS.map(r => [r.engine, r]));
+    const A_LABEL = { reframe:"Reframe", deflect:"Deflect", capitulate:"Capitulate" };
+    const B_LABEL = { operationalized:"Operationalized", parroted:"Parroted", theory_shaped_noise:"Theory-shaped noise" };
+
+    // Control metric: number quality (luck-irrelevant, labeled as such).
+    function numberScore(nums){
+      const m = nums.main || [];
+      if (!m.length) return 0;
+      const sorted = [...m].sort((a,b)=>a-b);
+      const spread = (sorted[sorted.length-1]-sorted[0]) / 68;           // 0..1 over 1-69 range
+      const birthdayFree = 1 - (m.filter(n=>n<=31).length / m.length);    // fewer birthdays = higher
+      const gaps = sorted.slice(1).map((n,i)=>n-sorted[i]);
+      const noRuns = gaps.some(g=>g===1) ? .6 : 1;
+      return Math.round((spread*.4 + birthdayFree*.4 + noRuns*.2) * 100);
+    }
+
+    function balls(nums){
+      const m = (nums.main||[]).map(n=>`<span class="ball">${String(n).padStart(2,"0")}</span>`).join("");
+      const s = nums.special!=null ? `<span class="ball special">${String(nums.special).padStart(2,"0")}</span>` : "";
+      return `<div class="balls">${m}${s}</div>`;
+    }
+
+    let selected = RUNS[0]?.engine || ENGINES[0].id;
+
+    function renderEngines(){
+      document.getElementById("engineList").innerHTML = ENGINES.map(e=>{
+        const has = !!runByEngine[e.id];
+        return `<button class="engine ${e.id===selected?"active":""}" data-id="${e.id}">
+          <span class="name">${e.label}<span class="dot ${has?"has":"none"}" title="${has?"probed":"not yet probed"}"></span></span>
+          <span class="sub">${e.vendor} · ${e.tier}${has?"":" · not yet probed"}</span>
+        </button>`;
+      }).join("");
+      document.querySelectorAll(".engine").forEach(b=>b.onclick=()=>{selected=b.dataset.id;render();});
+    }
+
+    function renderDetail(){
+      const e = ENGINES.find(x=>x.id===selected);
+      const run = runByEngine[selected];
+      document.getElementById("selTitle").textContent = e.label;
+      document.getElementById("selTag").textContent = run ? (run.selfProbe ? "self-probe · "+run.ranAt : run.ranAt) : "";
+      const d = document.getElementById("detail");
+      if (!run){
+        d.innerHTML = `<div class="empty">${e.label} has not been probed yet.<br>Run it through the two-phase protocol (see <code>study/PROTOCOL.md</code>) with the reference runner in <code>study/runner/</code>, then add a record to <code>study/runs.js</code>.</div>`;
+        return;
+      }
+      const a = run.phaseA, b = run.phaseB;
+      d.innerHTML = `
+        <div class="phase">
+          <div class="ph">
+            <h3>Phase A — bare task</h3>
+            <span class="chip ${a.behavior}">${A_LABEL[a.behavior]}</span>
+            <span class="meta">push depth ${a.pushDepth} ${a.pushDepth===0?"· volunteered":"· needed "+a.pushDepth+" nudge(s)"}</span>
+            <div class="resp">${a.response}</div>
+            ${balls(a.numbers)}
+          </div>
+          <div class="ph">
+            <h3>Phase B — theory given</h3>
+            <span class="chip ${b.behavior}">${B_LABEL[b.behavior]}</span>
+            <div class="resp">${b.response}</div>
+            ${balls(b.numbers)}
+          </div>
+        </div>
+        <div class="control">
+          <span class="lbl">Control (luck, not reasoning)</span>
+          <p>Phase-B number score: <b>${numberScore(b.numbers)}/100</b> on spread + birthday-avoidance + no-runs. This measures how unlike a human the picks are — it does <b>not</b> measure reasoning and does <b>not</b> change odds of winning. A model that scores higher here did not think better.</p>
+        </div>
+        ${run.notes?`<p class="meta">${run.notes}</p>`:""}`;
+    }
+
+    function renderStudy(){
+      document.getElementById("studyRows").innerHTML = ENGINES.map(e=>{
+        const r = runByEngine[e.id];
+        if (!r) return `<tr><td>${e.label}<div class="small">not yet probed</div></td><td colspan="3" class="empty" style="padding:10px">—</td><td class="control-col">—</td></tr>`;
+        return `<tr>
+          <td>${e.label}${r.selfProbe?'<div class="small">self-probe</div>':""}</td>
+          <td><span class="chip ${r.phaseA.behavior}">${A_LABEL[r.phaseA.behavior]}</span></td>
+          <td>${r.phaseA.pushDepth}</td>
+          <td><span class="chip ${r.phaseB.behavior}">${B_LABEL[r.phaseB.behavior]}</span></td>
+          <td class="control-col">${numberScore(r.phaseB.numbers)}/100</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function render(){ renderEngines(); renderDetail(); renderStudy(); }
+    render();
+  </script>
+</body>
+</html>
+</content>

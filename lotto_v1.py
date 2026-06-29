@@ -10,7 +10,7 @@ def load_lottery_data(csv_path):
     df = pd.read_csv(csv_path)
     return df
 
-lottery_data = load_lottery_data("./historical_data/csv/Past180Days_Mega_Millions.csv")
+lottery_data = load_lottery_data("./historical_data/csv/Past180Days_Powerball.csv")
 
 # 2. Feature Engineering
 def prepare_features(df):

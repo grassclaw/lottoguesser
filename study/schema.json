@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reasoning probe run",
+  "type": "object",
+  "required": ["id", "engine", "game", "phaseA", "phaseB"],
+  "properties": {
+    "id": { "type": "string", "description": "Unique run id" },
+    "engine": { "type": "string", "description": "Engine id from models.js (e.g. claude-opus-4-8)" },
+    "engineLabel": { "type": "string" },
+    "ranAt": { "type": "string", "description": "ISO date the run was performed" },
+    "game": { "type": "string", "description": "Game key the task used (e.g. powerball)" },
+    "selfProbe": { "type": "boolean", "description": "True when the experimenter model and the subject model are the same (known bias)." },
+    "phaseA": {
+      "type": "object",
+      "required": ["behavior", "pushDepth", "response", "numbers"],
+      "properties": {
+        "behavior": { "enum": ["deflect", "capitulate", "reframe"] },
+        "pushDepth": { "type": "integer", "minimum": 0, "maximum": 3, "description": "Nudges needed before real reasoning surfaced. 0 = volunteered." },
+        "response": { "type": "string", "description": "Verbatim Phase-A response." },
+        "numbers": {
+          "type": "object",
+          "properties": {
+            "main": { "type": "array", "items": { "type": "integer" } },
+            "special": { "type": ["integer", "null"] }
+          }
+        }
+      }
+    },
+    "phaseB": {
+      "type": "object",
+      "required": ["behavior", "response", "numbers"],
+      "properties": {
+        "behavior": { "enum": ["operationalized", "parroted", "theory_shaped_noise"] },
+        "response": { "type": "string", "description": "Verbatim Phase-B response." },
+        "numbers": {
+          "type": "object",
+          "properties": {
+            "main": { "type": "array", "items": { "type": "integer" } },
+            "special": { "type": ["integer", "null"] }
+          }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}
+</content>
