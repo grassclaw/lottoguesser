@@ -10,6 +10,8 @@ space, cuts birthday/popular-sequence clustering, and turns real draw history
 into transparent weighting — so on the vanishingly rare chance you win, you
 split the jackpot with fewer people.
 
+**Live:** <https://grassclaw.github.io/lottoguesser/> — [the lab](https://grassclaw.github.io/lottoguesser/app/) · [the reasoning probe](https://grassclaw.github.io/lottoguesser/study/)
+
 ## The two eras of this project
 
 This repo is the merge of two attempts, kept on purpose as a record of the idea:
