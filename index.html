@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lottery Guesser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--ink:#f5f0e7;--muted:#b9b0a4;--dim:#706a62;--line:#514a40;--gold:#ffca5f;--mint:#8ef6c7;--shadow:rgba(0,0,0,.42)}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;color:var(--ink);font-family:"IBM Plex Sans",ui-sans-serif,sans-serif;
+      background:radial-gradient(circle at 18% 10%,rgba(255,202,95,.16),transparent 30rem),
+        radial-gradient(circle at 82% 14%,rgba(112,185,255,.12),transparent 32rem),
+        linear-gradient(135deg,#11100f 0%,#1d1915 52%,#0d0f10 100%)}
+    main{width:min(880px,92%);padding:40px 0}
+    .eyebrow{display:flex;align-items:center;gap:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+    .eyebrow::before{content:"";width:48px;height:1px;background:var(--gold)}
+    h1{margin:.15em 0 0;font-family:"Fraunces",Georgia,serif;font-size:clamp(46px,9vw,96px);line-height:.88}
+    .lead{max-width:680px;color:var(--muted);font-size:clamp(16px,1.9vw,20px);line-height:1.55;margin:16px 0 30px}
+    .lead em{color:var(--ink);font-style:italic}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:640px){.cards{grid-template-columns:1fr}}
+    a.card{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:10px;
+      background:rgba(33,31,28,.92);box-shadow:0 18px 44px var(--shadow);padding:22px;transition:transform .16s,border-color .16s}
+    a.card:hover{transform:translateY(-2px);border-color:var(--gold)}
+    a.card h2{margin:0 0 8px;font-size:18px;color:var(--gold)}
+    a.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+    a.card .go{margin-top:14px;color:var(--mint);font-size:13px;font-weight:700}
+    footer{margin-top:28px;color:var(--dim);font-size:13px;line-height:1.5}
+    footer a{color:var(--dim)}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">The pattern is that there is no pattern</div>
+    <h1>Lottery Guesser</h1>
+    <p class="lead">A deliberately honest number lab — and a clean room for testing reasoning. A fair draw has <em>no</em> pattern to predict, so the only honest moves are to pick unlike a human, and to ask what an intelligence does when handed a task it <em>can't</em> solve.</p>
+    <div class="cards">
+      <a class="card" href="./app/">
+        <h2>The Lab</h2>
+        <p>Generate picks that spread across the board, dodge birthday and popular-sequence clustering, and grade themselves against real draws. Powerball, Mega Millions, and Arizona games.</p>
+        <div class="go">Open the lab &rarr;</div>
+      </a>
+      <a class="card" href="./study/">
+        <h2>The Reasoning Probe</h2>
+        <p>The lottery as instrument: a two-phase test of whether a reasoning engine deflects, capitulates, or reframes when it can't bluff. Number-matches kept as a deliberate control.</p>
+        <div class="go">Open the study &rarr;</div>
+      </a>
+    </div>
+    <footer>
+      Source: <a href="https://github.com/grassclaw/lottoguesser">github.com/grassclaw/lottoguesser</a>.
+      It cannot change your odds of winning — only who you'd share a prize with. A toy and a thesis, not a strategy.
+    </footer>
+  </main>
+</body>
+</html>
+</content>
